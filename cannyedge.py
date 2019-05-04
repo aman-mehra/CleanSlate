@@ -1,5 +1,11 @@
 import cv2, numpy as np
 import sys
+import time
+from imutils.video import VideoStream
+# capture frames from a camera 
+cap = VideoStream(src=1).start()
+  
+time.sleep(2.0)
 
 def get_new(old):
     new = np.ones(old.shape, np.uint8)
@@ -7,9 +13,9 @@ def get_new(old):
     return new
 
 if __name__ == '__main__':
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
     while True:
-        _, orig = cap.read()
+        orig = cap.read()
         ##    orig = cv2.imread(sys.argv[1])
 
         # these constants are carefully picked
@@ -33,16 +39,22 @@ if __name__ == '__main__':
                              (255,0,0), 2, 8)
 
         # finding contours
-        contours, _ = cv2.findContours(edges.copy(), cv2.CV_RETR_EXTERNAL,
-                                       cv2.CV_CHAIN_APPROX_TC89_KCOS)
+        contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_TC89_KCOS)
+        
+        rc = cv2.minAreaRect(contours[0])
         contours = filter(lambda cont: cv2.arcLength(cont, False) > 100, contours)
         contours = filter(lambda cont: cv2.contourArea(cont) > 10000, contours)
-
+        
+        
         # simplify contours down to polygons
         rects = []
         for cont in contours:
             rect = cv2.approxPolyDP(cont, 40, True).copy().reshape(-1, 2)
             rects.append(rect)
+
+        print(len(rects))
+        print(rects)
 
         # that's basically it
         cv2.drawContours(orig, rects,-1,(0,255,0),1)
@@ -58,6 +70,16 @@ if __name__ == '__main__':
         cv2.imshow('Edges', edges)
         cv2.imshow('New', new)
 
+
+        # box = cv2.boxPoints(rects)
+        if(len(rects) != 0):
+            for p in rects[0]:
+                pt = (p[0],p[1])
+                print (pt)
+                cv2.circle(orig,pt,5,(200,0,0),2)
+        cv2.imshow("plank", orig)
+
+        # time.sleep(10)
         k = cv2.waitKey(30) & 0xff
         if(k == ord('q')):
             break

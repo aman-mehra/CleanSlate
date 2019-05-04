@@ -11,28 +11,23 @@ import time
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video",
 	help="path to the (optional) video file")
-ap.add_argument("-b", "--buffer", type=int, default=64,
+ap.add_argument("-b", "--buffer", type=int, default=256,
 	help="max buffer size")
 args = vars(ap.parse_args())
 
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
-Lower = (37, 100, 0)
-Upper = (90, 255, 255)
- 
-##Lower = (0, 70, 50)
-##Upper = (4, 255, 255)
-##
-##Lower2 = (170, 70, 50)
-##Upper2 = (180, 255, 255)
-
-pts = deque(maxlen=args["buffer"])
+##greenLower = (29, 86, 6)
+##greenUpper = (64, 255, 255)
+greenLower = (37,100,0)
+greenUpper = (95,255,255)
+pts = deque(maxlen=12800)
  
 # if a video path was not supplied, grab the reference
 # to the webcam
 if not args.get("video", False):
-	vs = VideoStream(src=0).start()
+	vs = VideoStream(src=1).start()
  
 # otherwise, grab a reference to the video file
 else:
@@ -63,13 +58,9 @@ while True:
 	# construct a mask for the color "green", then perform
 	# a series of dilations and erosions to remove any small
 	# blobs left in the mask
-	mask = cv2.inRange(hsv, Lower, Upper)
-##	mask2 = cv2.inRange(hsv,Lower2,Upper2)
-##	mask = mask | mask2
+	mask = cv2.inRange(hsv, greenLower, greenUpper)
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
-
-	cv2.imshow("Masked",mask)
 
 	# find contours in the mask and initialize the current
 	# (x, y) center of the ball
@@ -92,9 +83,10 @@ while True:
 		if radius > 10:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 255, 255), 2)
-			cv2.circle(frame, center, 5, (0, 0, 255), -1)
+			# cv2.circle(frame, (int(x), int(y)), int(radius),
+				# (0, 255, 255), 2)
+			center = (int(x),int(y+radius))
+			cv2.circle(frame,center , 5, (0, 0, 255), -1)
  
 	# update the points queue
 	pts.appendleft(center)
@@ -109,7 +101,8 @@ while True:
 		# otherwise, compute the thickness of the line and
 		# draw the connecting lines
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
+		# print(thickness)
+		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), max(thickness,1))
  
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)

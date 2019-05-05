@@ -18,7 +18,7 @@ def get_TransformMatrix(transform_coordinates):
 
 def sort_points(transform_coordinates):
     temp_arr = []
-    for i in range(3):
+    for i in range(4):
         idx,minval = 0,transform_coordinates[0][0]
         for j in range(len(transform_coordinates)):
             if transform_coordinates[j][0] < minval:
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         cv2.GaussianBlur(new, (9,9), 0, new)
         new = cv2.Canny(new, 0, CANNY, apertureSize=3)
 
-        # cv2.imshow('Orig', orig)
+        cv2.imshow('Orig', orig)
         # cv2.imshow('Dilated', dilated)
         # cv2.imshow('Edges', edges)
         cv2.imshow('New', new)
@@ -116,8 +116,8 @@ if __name__ == '__main__':
         if(k == ord('q')):
             break
 
-    trans_M = get_TransformMatrix(transform_coordinates)
-    writer.write(cap,trans_M)
+    # trans_M = get_TransformMatrix(transform_coordinates)
+    writer.write(cap,transform_coordinates)
 
-cap.release()
+# cap.release()
 cv2.destroyAllWindows()

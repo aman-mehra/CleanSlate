@@ -14,7 +14,13 @@ while True:
 ##    print(imgResp)
 ##    imgNp=np.array(bytearray(imgResp.read()),dtype=np.uint8)
 ##    frame=cv2.imdecode(imgNp,-1)
-    fgmask = fg.apply(frame,fgmask,0.05)
+    fgmask = fg.apply(frame)
+    temp_intensity_vals = []
+    for i in range(frame.shape[0]):
+    	for j in range(frame.shape[1]):
+    		if(fgmask[i,j] not in temp_intensity_vals):
+    			temp_intensity_vals.append(fgmask[i,j])
+    print(temp_intensity_vals)
 
     cv2.imshow("Origi",frame)
     cv2.imshow("Fg",fgmask)
